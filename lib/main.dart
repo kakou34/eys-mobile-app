@@ -1,11 +1,17 @@
 import 'package:eys/Authentication/LoginPage.dart';
+import 'package:eys/Authentication/Profile.dart';
 import 'package:eys/Authentication/UserDetails.dart';
+import 'package:eys/Events/AvailableEvents.dart';
+import 'package:eys/Events/EventListItem.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert' show json, base64, ascii;
 
-const SERVER_IP = ' http://f76090d92ea4.ngrok.io';
+import 'Commun/Drawer.dart';
+import 'Globals.dart';
+import 'Routes/Routes.dart';
+
 final storage = FlutterSecureStorage();
 
 void main() {
@@ -13,6 +19,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+
+
   Future<String> get userOrEmpty async {
     var user = await storage.read(key: "userDetails");
     if(user == null) return "";
@@ -32,15 +40,17 @@ class MyApp extends StatelessWidget {
             if(!snapshot.hasData) return CircularProgressIndicator();
             if(snapshot.data != "") {
               UserDetails userDetails = UserDetails.fromJson(json.decode(snapshot.data));
-              var token = userDetails.token;
-              var jwt = token.split(".");
-
+              Globals.currentUser = userDetails;
+              Globals.isLoggedIn = true;
+              Globals.token = userDetails.token;
+              var jwt = userDetails.token.split(".");
               if(jwt.length !=3) {
                 return LoginPage();
               } else {
                 var payload = json.decode(ascii.decode(base64.decode(base64.normalize(jwt[1]))));
                 if(DateTime.fromMillisecondsSinceEpoch(payload["exp"]*1000).isAfter(DateTime.now())) {
-                  return MyHomePage("Welcome " + userDetails.username);
+                  storage.delete(key: "user");
+                  return MyHomePage(title: "EYS");
                 } else {
                   return LoginPage();
                 }
@@ -50,32 +60,33 @@ class MyApp extends StatelessWidget {
             }
           }
       ),
+      routes:  {
+        Routes.profile: (context) => Profile(),
+        Routes.home: (context) => MyHomePage(),
+        Routes.login: (context) => LoginPage(),
+        Routes.availableEvents: (context) => AvailableEvents(),
+      },
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  MyHomePage(this.title);
-
   final String title;
+  static const String routeName = '/home';
+
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) =>
-      Scaffold(
-        appBar: AppBar(title: Text("Secret Data Screen")),
-        body: Center(
-          child: FutureBuilder(
-              builder: (context, snapshot) =>
-              snapshot.hasData ?
-              Column(children: <Widget>[
-                Text(title),
-              ],)
-                  :
-              snapshot.hasError ? Text("An error occurred") : CircularProgressIndicator()
-          ),
-        ),
-      );
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("EYS")),
+      body: Center(child: Text("Welcome to EYS")),
 
+
+
+      drawer: AppDrawer(),
+    );
+  }
 }
 
 

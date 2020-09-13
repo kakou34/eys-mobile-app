@@ -1,46 +1,61 @@
+import 'dart:convert';
 import 'dart:developer';
 
+import 'package:eys/Authentication/LoginPage.dart';
+import 'package:eys/Authentication/UserDetails.dart';
+import 'package:eys/Commun/Drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final storage = FlutterSecureStorage();
+
 class Profile extends StatelessWidget {
-  Profile({this.username, this.email, this.turkishID,this.lastname,this.firstname, this.authorities});
-  final String username;
-  final String email;
-  final String turkishID;
-  final String firstname;
-  final String lastname;
-  final List<dynamic> authorities;
-
-
-  factory Profile.fromJson(Map<String, dynamic> json) {
-    return Profile(
-      username: json['username'],
-      firstname: json['firstname'],
-      lastname: json['lastname'],
-      email: json['email'],
-      turkishID: json['turkishID'],
-      authorities: json['authorities'],
-    );
+  static const String routeName = '/profile';
+  Future<String> get userOrEmpty async {
+    var user = await storage.read(key: "userDetails");
+    if (user == null) return "";
+    return user;
   }
 
   @override
-  Widget build(BuildContext context) =>
-      Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text("Profile")),
+        drawer: AppDrawer(),
         body: Center(
           child: FutureBuilder(
-              builder: (context, snapshot) =>
-              Column(children: <Widget>[
-                Text( username + "Profile"),
-                Text("Firstname: " + firstname),
-                Text( "Lastname: " + lastname),
-                Text( "Email: " + email),
-                Text( "TC: " + turkishID),
-              ],)
-          ),
+              future: userOrEmpty,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return CircularProgressIndicator();
+                if (snapshot.data != "") {
+                  UserDetails userDetails =
+                      UserDetails.fromJson(json.decode(snapshot.data));
+                  var token = userDetails.token;
+                  var jwt = token.split(".");
+                  if (jwt.length != 3) {
+                    return LoginPage();
+                  } else {
+                    var payload = json.decode(
+                        ascii.decode(base64.decode(base64.normalize(jwt[1]))));
+                    if (DateTime.fromMillisecondsSinceEpoch(
+                            payload["exp"] * 1000)
+                        .isAfter(DateTime.now())) {
+                      return Column(
+                        children: <Widget>[
+                          Text(userDetails.username + "Profile"),
+                          Text("Firstname: " + userDetails.firstname),
+                          Text("Lastname: " + userDetails.lastname),
+                          Text("Email: " + userDetails.email),
+                          Text("TC: " + userDetails.turkishID),
+                        ],
+                      );
+                    } else {
+                      return LoginPage();
+                    }
+                  }
+                } else {
+                  return LoginPage();
+                }
+              }),
         ),
       );
-
 }
