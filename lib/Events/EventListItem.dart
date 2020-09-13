@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:eys/Events/Event.dart';
+import 'package:eys/Events/EventDetails.dart';
 import 'package:eys/Globals.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -38,6 +39,14 @@ class _EventListItemState extends State<EventListItem> {
         style: _biggerFont,
       ),
       subtitle: Text(event.startDate+"~"+event.endDate),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetails(event: event),
+            ),
+          );
+        } //onTap
     );
   }
 
