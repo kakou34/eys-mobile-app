@@ -2,9 +2,7 @@ import 'package:eys/Authentication/LoginPage.dart';
 import 'package:eys/Authentication/Profile.dart';
 import 'package:eys/Authentication/UserDetails.dart';
 import 'package:eys/Events/AvailableEvents.dart';
-import 'package:eys/Events/EventListItem.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert' show json, base64, ascii;
 
@@ -19,11 +17,9 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-
-
   Future<String> get userOrEmpty async {
     var user = await storage.read(key: "userDetails");
-    if(user == null) return "";
+    if (user == null) return "";
     return user;
   }
 
@@ -37,18 +33,21 @@ class MyApp extends StatelessWidget {
       home: FutureBuilder(
           future: userOrEmpty,
           builder: (context, snapshot) {
-            if(!snapshot.hasData) return CircularProgressIndicator();
-            if(snapshot.data != "") {
-              UserDetails userDetails = UserDetails.fromJson(json.decode(snapshot.data));
+            if (!snapshot.hasData) return CircularProgressIndicator();
+            if (snapshot.data != "") {
+              UserDetails userDetails =
+                  UserDetails.fromJson(json.decode(snapshot.data));
               Globals.currentUser = userDetails;
               Globals.isLoggedIn = true;
               Globals.token = userDetails.token;
               var jwt = userDetails.token.split(".");
-              if(jwt.length !=3) {
+              if (jwt.length != 3) {
                 return LoginPage();
               } else {
-                var payload = json.decode(ascii.decode(base64.decode(base64.normalize(jwt[1]))));
-                if(DateTime.fromMillisecondsSinceEpoch(payload["exp"]*1000).isAfter(DateTime.now())) {
+                var payload = json.decode(
+                    ascii.decode(base64.decode(base64.normalize(jwt[1]))));
+                if (DateTime.fromMillisecondsSinceEpoch(payload["exp"] * 1000)
+                    .isAfter(DateTime.now())) {
                   storage.delete(key: "user");
                   return MyHomePage(title: "EYS");
                 } else {
@@ -58,9 +57,8 @@ class MyApp extends StatelessWidget {
             } else {
               return LoginPage();
             }
-          }
-      ),
-      routes:  {
+          }),
+      routes: {
         Routes.profile: (context) => Profile(),
         Routes.home: (context) => MyHomePage(),
         Routes.login: (context) => LoginPage(),
@@ -80,13 +78,10 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("EYS")),
-      body: Center(child: Text("Welcome to EYS")),
-
-
-
+      body: Center(
+          child: Text('Welcome to EYS',
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic, color: Colors.blue ))),
       drawer: AppDrawer(),
     );
   }
 }
-
-

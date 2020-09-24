@@ -11,6 +11,7 @@ final storage = FlutterSecureStorage();
 
 class Profile extends StatelessWidget {
   static const String routeName = '/profile';
+
   Future<String> get userOrEmpty async {
     var user = await storage.read(key: "userDetails");
     if (user == null) return "";
@@ -40,12 +41,29 @@ class Profile extends StatelessWidget {
                             payload["exp"] * 1000)
                         .isAfter(DateTime.now())) {
                       return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(userDetails.username + "Profile"),
-                          Text("Firstname: " + userDetails.firstname),
-                          Text("Lastname: " + userDetails.lastname),
-                          Text("Email: " + userDetails.email),
-                          Text("TC: " + userDetails.turkishID),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(20, 20, 20, 40),
+                              child: Text('Profile Of ' + userDetails.username,
+                                  style: TextStyle(fontSize: 22, fontStyle: FontStyle.italic, color: Colors.blue))),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(40, 10, 10, 10),
+                              child: Text('First Name: ' + userDetails.firstname ,
+                                  style: TextStyle(fontSize: 16))),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(40, 10, 10, 10),
+                              child: Text('Last Name: ' + userDetails.lastname ,
+                                  style: TextStyle(fontSize: 16))),
+                          Divider(),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(40, 10, 10, 10),
+                              child: Text('Email: ' + userDetails.email ,
+                                  style: TextStyle(fontSize: 16))),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(40, 10, 10, 10),
+                              child: Text('TC : ' + userDetails.turkishID ,
+                                  style: TextStyle(fontSize: 16))),
                         ],
                       );
                     } else {
